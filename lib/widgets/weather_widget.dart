@@ -1,33 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
-class WeatherWidget extends StatelessWidget {
-  const WeatherWidget({super.key});
-  void initState() {
-    initState();
+class WeatherWidget extends StatefulWidget {
+  const WeatherWidget({
+    super.key,
+  });
 
-    getPosition();
+  @override
+  State<WeatherWidget> createState() => _WeatherWidgetState();
+}
+
+class _WeatherWidgetState extends State<WeatherWidget> {
+  late Future<Position> position;
+
+  Future<Position> getPosition() async {
+    await Geolocator.requestPermission();
+    Position currentPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    Position? lastPosition = await Geolocator.getLastKnownPosition();
+    return currentPosition;
   }
 
-  Future<void> getPosition() async {
-    var currentPosition = await Geolocator.getCurrentPosition();
-    var lastPosition = await Geolocator.getLastKnownPosition();
-    print(currentPosition);
-    print(lastPosition);
+  @override
+  void initState() {
+    super.initState();
+
+    position = getPosition();
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        "Nice To Weather!",
-        style: TextStyle(
-          fontFamily: "NanumSquareNeo",
-          fontSize: 56,
-          fontWeight: FontWeight.w900,
-          color: Colors.black,
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text(
+          "Nice To Weather!",
+          style: TextStyle(
+            fontFamily: "NanumSquareNeo",
+            fontSize: 56,
+            fontWeight: FontWeight.w900,
+            color: Colors.black,
+          ),
         ),
-      ),
+        FutureBuilder(
+            future: position,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return Text("$snapshot");
+              }
+              return const Text("...");
+            })
+      ],
     );
   }
 }
